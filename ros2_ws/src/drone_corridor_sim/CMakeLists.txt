@@ -13,10 +13,14 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 # ── Install Python scripts (standalone executables) ───────────
-# install(PROGRAMS
-#   scripts/your_node.py
-#   DESTINATION lib/${PROJECT_NAME}
-# )
+# Automatically find and install any .py scripts candidates create
+file(GLOB PYTHON_SCRIPTS "scripts/*.py")
+if(PYTHON_SCRIPTS)
+  install(PROGRAMS
+    ${PYTHON_SCRIPTS}
+    DESTINATION lib/${PROJECT_NAME}
+  )
+endif()
 
 # ── Install package resources ─────────────────────────────────
 install(DIRECTORY
