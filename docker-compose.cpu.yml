@@ -1,0 +1,6 @@
+version: "3.8"
+
+services:
+  drone_sim:
+    environment:
+      - LIBGL_ALWAYS_SOFTWARE=1

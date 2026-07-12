@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd"
+            schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>drone_corridor_sim</name>
+  <version>1.0.0</version>
+  <description>
+    Drone corridor simulation: ROS2 Humble + Gazebo Classic.
+    Extended sjtu_drone with front LiDAR, 2x side ToF, GPS.
+    Custom corridor world with obstacles.
+  </description>
+  <maintainer email="induction@arty.dev">Arty Induction</maintainer>
+  <license>Apache-2.0</license>
+
+  <!-- Build tool -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- ROS2 deps -->
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+
+  <!-- Description / simulation deps -->
+  <depend>robot_state_publisher</depend>
+  <depend>joint_state_publisher</depend>
+  <depend>xacro</depend>
+  <depend>gazebo_ros</depend>
+  <depend>gazebo_ros_pkgs</depend>
+  <depend>gazebo_plugins</depend>
+
+  <!-- Visualization -->
+  <depend>rviz2</depend>
+
+  <!-- sjtu_drone -->
+  <depend>sjtu_drone_description</depend>
+  <depend>sjtu_drone_bringup</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

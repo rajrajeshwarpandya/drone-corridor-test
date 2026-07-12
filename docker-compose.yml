@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  drone_sim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: drone_corridor_sim:humble
+    container_name: drone_corridor_sim
+
+    # ── Display / GUI ──────────────────────────────────────────
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - GAZEBO_MODEL_PATH=/root/ros2_ws/src/sjtu_drone/sjtu_drone_description/models:/root/ros2_ws/src/drone_corridor_sim/models
+      - ROS_DOMAIN_ID=0
+      - PYTHONOPTIMIZE=1
+
+    volumes:
+      # X11 socket for GUI windows
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Live-edit: mount our package so changes take effect on restart
+      - ./ros2_ws/src/drone_corridor_sim:/root/ros2_ws/src/drone_corridor_sim:rw
+
+    # Share host network so RViz2 / ros2 CLI works from host too
+    network_mode: host
+
+    # Privileged needed for some Gazebo IPC operations
+    privileged: false
+    security_opt:
+      - seccomp:unconfined
+
+    stdin_open: true
+    tty: true
