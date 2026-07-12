@@ -18,6 +18,22 @@ obstacles using:
 | docker-compose | 2.20+ |
 | Linux host with X11 | (for Gazebo GUI) |
 
+### Installing Docker & NVIDIA Container Toolkit (Ubuntu/Debian)
+
+If you don't have Docker or the NVIDIA toolkit installed, you can install them by running:
+
+```bash
+# 1. Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# 2. Add your user to the docker group (so you don't need sudo)
+sudo usermod -aG docker $USER
+newgrp docker
+
+# 3. Install the NVIDIA Container Toolkit (for GPU support)
+sudo ./install_nvidia_docker.sh
+```
 ---
 
 ## Quick Start
@@ -150,10 +166,17 @@ Instead of manually editing the compose file, simply run the launcher with the G
 
 ---
 
-## References
+## References & Helpful Resources
 
+**ROS 2 & Python Basics:**
+- [Writing a simple Publisher and Subscriber (Python)](https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Publisher-And-Subscriber.html)
+- [rclpy API Documentation](https://docs.ros2.org/latest/api/rclpy/index.html)
+- [OpenCV Python Tutorials](https://docs.opencv.org/4.x/d6/d00/tutorial_py_root.html) (useful for Green Banner detection)
+
+**Documentation:**
 - [sjtu_drone (ROS2)](https://github.com/NovoG93/sjtu_drone) — the base drone model
 - [gazebo_ros_pkgs](https://github.com/ros-simulation/gazebo_ros_pkgs) — Gazebo ↔ ROS2 bridge
 - [ROS2 Humble Docs](https://docs.ros.org/en/humble/)
-- [sensor_msgs/LaserScan](https://docs.ros2.org/humble/api/sensor_msgs/msg/LaserScan.html)
+- [sensor_msgs/Image](https://docs.ros2.org/humble/api/sensor_msgs/msg/Image.html)
 - [sensor_msgs/Range](https://docs.ros2.org/humble/api/sensor_msgs/msg/Range.html)
+- [geometry_msgs/Twist](https://docs.ros2.org/humble/api/geometry_msgs/msg/Twist.html)
