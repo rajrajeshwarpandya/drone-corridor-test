@@ -114,6 +114,9 @@ def generate_launch_description():
                 condition=None,
                 output="log",
             )
+        ],
+    )
+
     return LaunchDescription([
         use_sim_time_arg,
         use_rviz_arg,
