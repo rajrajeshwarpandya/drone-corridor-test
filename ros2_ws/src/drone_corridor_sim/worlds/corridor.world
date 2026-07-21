@@ -1,29 +1,30 @@
 <?xml version="1.0"?>
 <!--
-  corridor.world  —  Gazebo Classic SDF world
-  ============================================
-  Layout (top-down view, looking at X-Y plane):
+  search_field.world  —  Gazebo Classic SDF world (Stage 2)
+  =========================================================
+  30 × 40 m open field with yellow boundary walls.
+  5 blue 1×1 m ground targets scattered across the field.
+  Red no-go zone is spawned at runtime (random position/angle).
+
+  Layout (top-down, X→right, Y→up):
 
       Y
-      ^
-   +1.5|  ┌─────────────────────────────────────────┐  ← Left wall
-       |  │ ████         ████        ████████       │
-    0  │  │     DRONE→     ██          ████  ██    │  → X (20m)
-       |  │         ████       █████████   ██ ██   │
-   -1.5|  └─────────────────────────────────────────┘  ← Right wall
-       0   4   7   10  13  15.5 17.5 19.5
+   40 ┌──────────────────────────────────┐
+      │                                  │
+      │   ■ blue(1)        ■ blue(3)     │
+      │                                  │
+      │          ■ blue(2)               │
+      │                                  │
+      │   ■ blue(4)         ■ blue(5)    │
+      │                                  │
+    0 └──────────────────────────────────┘
+      0                                 30
+                   X →
 
-  Obstacles:
-    OB1 (x=4):   Left pillar 1.2m wide → go right
-    OB2 (x=7):   Right pillar 1.2m wide → go left
-    OB3 (x=10):  Pinch BOTH sides, 0.8m center gap
-    OB4 (x=13):  Center wall 2.2m, gap on left only
-    OB5 (x=15.5): Large right block 1.8m → go left
-    OB6 (x=17.5): Tight pinch, 0.6m gap offset right
-    OB7 (x=19.5): Left pillar 1.4m → exit right
+  Drone spawns at (1, 1, 0.3) — bottom-left corner.
 -->
 <sdf version="1.6">
-  <world name="corridor_world">
+  <world name="search_field">
 
     <!-- ── Physics ─────────────────────────────────────────── -->
     <physics name="ode_physics" type="ode">
@@ -34,13 +35,13 @@
         <solver>
           <type>quick</type>
           <iters>150</iters>
-          <sor>1.400000</sor>
+          <sor>1.4</sor>
         </solver>
         <constraints>
-          <cfm>0.000000</cfm>
-          <erp>0.200000</erp>
-          <contact_max_correcting_vel>2000.000000</contact_max_correcting_vel>
-          <contact_surface_layer>0.001000</contact_surface_layer>
+          <cfm>0.0</cfm>
+          <erp>0.2</erp>
+          <contact_max_correcting_vel>2000.0</contact_max_correcting_vel>
+          <contact_surface_layer>0.001</contact_surface_layer>
         </constraints>
       </ode>
     </physics>
@@ -48,15 +49,15 @@
     <!-- ── Lighting ────────────────────────────────────────── -->
     <light name="sun" type="directional">
       <cast_shadows>true</cast_shadows>
-      <pose>0 0 20 0 0 0</pose>
+      <pose>15 20 30 0 0 0</pose>
       <diffuse>0.9 0.9 0.9 1</diffuse>
       <specular>0.3 0.3 0.3 1</specular>
-      <direction>-0.5 0.2 -0.9</direction>
+      <direction>-0.3 0.1 -0.9</direction>
     </light>
 
     <scene>
-      <ambient>0.5 0.5 0.5 1</ambient>
-      <background>0.3 0.5 0.7 1</background>
+      <ambient>0.6 0.6 0.6 1</ambient>
+      <background>0.4 0.6 0.85 1</background>
       <shadows>true</shadows>
     </scene>
 
@@ -72,7 +73,7 @@
         </collision>
         <visual name="visual">
           <cast_shadows>false</cast_shadows>
-          <geometry><plane><normal>0 0 1</normal><size>50 50</size></plane></geometry>
+          <geometry><plane><normal>0 0 1</normal><size>80 80</size></plane></geometry>
           <material>
             <script>
               <uri>file://media/materials/scripts/gazebo.material</uri>
@@ -83,267 +84,186 @@
       </link>
     </model>
 
+    <!-- ── Field floor (green mat inside boundary) ────────── -->
+    <model name="field_floor">
+      <static>true</static>
+      <pose>15 20 0.001 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <cast_shadows>false</cast_shadows>
+          <geometry><box><size>30 40 0.001</size></box></geometry>
+          <material>
+            <ambient>0.15 0.35 0.15 1</ambient>
+            <diffuse>0.2 0.4 0.2 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
     <!-- ════════════════════════════════════════════════════════
-         CORRIDOR WALLS
-         Each wall: 20m long, 2.5m tall, 0.2m thick
+         YELLOW BOUNDARY WALLS
+         30m (X) × 40m (Y), 0.3m tall, 0.15m thick
     ════════════════════════════════════════════════════════ -->
 
-    <!-- Left wall (y = +1.6) -->
+    <!-- Bottom wall (Y=0) -->
+    <model name="wall_bottom">
+      <static>true</static>
+      <pose>15 -0.075 0.15 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>30.15 0.15 0.3</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>30.15 0.15 0.3</size></box></geometry>
+          <material>
+            <ambient>0.8 0.8 0.0 1</ambient>
+            <diffuse>0.9 0.9 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Top wall (Y=40) -->
+    <model name="wall_top">
+      <static>true</static>
+      <pose>15 40.075 0.15 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>30.15 0.15 0.3</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>30.15 0.15 0.3</size></box></geometry>
+          <material>
+            <ambient>0.8 0.8 0.0 1</ambient>
+            <diffuse>0.9 0.9 0.0 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Left wall (X=0) -->
     <model name="wall_left">
       <static>true</static>
-      <pose>10 1.6 1.25 0 0 0</pose>
+      <pose>-0.075 20 0.15 0 0 0</pose>
       <link name="link">
         <collision name="collision">
-          <geometry>
-            <box><size>22 0.2 2.5</size></box>
-          </geometry>
+          <geometry><box><size>0.15 40.15 0.3</size></box></geometry>
         </collision>
         <visual name="visual">
-          <geometry>
-            <box><size>22 0.2 2.5</size></box>
-          </geometry>
+          <geometry><box><size>0.15 40.15 0.3</size></box></geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/DarkGrey</name>
-            </script>
+            <ambient>0.8 0.8 0.0 1</ambient>
+            <diffuse>0.9 0.9 0.0 1</diffuse>
           </material>
         </visual>
       </link>
     </model>
 
-    <!-- Right wall (y = −1.6) -->
+    <!-- Right wall (X=30) -->
     <model name="wall_right">
       <static>true</static>
-      <pose>10 -1.6 1.25 0 0 0</pose>
+      <pose>30.075 20 0.15 0 0 0</pose>
       <link name="link">
         <collision name="collision">
-          <geometry>
-            <box><size>22 0.2 2.5</size></box>
-          </geometry>
+          <geometry><box><size>0.15 40.15 0.3</size></box></geometry>
         </collision>
         <visual name="visual">
-          <geometry>
-            <box><size>22 0.2 2.5</size></box>
-          </geometry>
+          <geometry><box><size>0.15 40.15 0.3</size></box></geometry>
           <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/DarkGrey</name>
-            </script>
-          </material>
-        </visual>
-      </link>
-    </model>
-
-
-
-    <!-- ════════════════════════════════════════════════════════
-         GREEN ENTRANCE BANNER
-         A tall green panel at the corridor entrance, visible
-         from outside. The drone searches for this to find and
-         enter the corridor.
-    ════════════════════════════════════════════════════════ -->
-    <model name="green_banner">
-      <static>true</static>
-      <!-- Shop-like banner spanning across the top of the corridor entrance -->
-      <!-- Placed at x=-0.5, centered at y=0, height z=2.5 -->
-      <pose>-0.5 0.0 2.5 0 0 0</pose>
-      <link name="link">
-        <collision name="collision">
-          <geometry><box><size>0.1 3.2 0.8</size></box></geometry>
-        </collision>
-        <visual name="visual">
-          <geometry><box><size>0.1 3.2 0.8</size></box></geometry>
-          <material>
-            <ambient>0.0 0.9 0.0 1</ambient>
-            <diffuse>0.0 0.95 0.0 1</diffuse>
-            <specular>0.1 0.4 0.1 1</specular>
+            <ambient>0.8 0.8 0.0 1</ambient>
+            <diffuse>0.9 0.9 0.0 1</diffuse>
           </material>
         </visual>
       </link>
     </model>
 
     <!-- ════════════════════════════════════════════════════════
-         OBSTACLES — challenging corridor course
-         Inner corridor: y = -1.5 to +1.5 (3.0m wide)
-         Drone must actively navigate around these.
-
-         OB1 (x=4):  Left pillar, blocks left half → go right
-         OB2 (x=7):  Right pillar, blocks right half → go left
-         OB3 (x=10): Pinch from BOTH sides, 0.8m center gap
-         OB4 (x=13): Center wall, gap on left side only
-         OB5 (x=15): Large right pillar, blocks right 2/3 → go left
-         OB6 (x=17): Pinch from both sides, 0.6m gap offset right
-         OB7 (x=19): Left pillar, blocks left half → go right
+         BLUE TARGET SQUARES — 5 × 1m×1m ground markers
+         The drone must locate these from above using the
+         downward camera.
     ════════════════════════════════════════════════════════ -->
 
-    <!-- OB1: Left pillar extends 1.2m into corridor → must go right -->
-    <model name="ob1_left_pillar">
+    <model name="blue_target_1">
       <static>true</static>
-      <pose>4 0.9 1.0 0 0 0</pose>
+      <pose>5 8 0.002 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry><box><size>0.5 1.2 2.0</size></box></geometry>
-        </collision>
         <visual name="visual">
-          <geometry><box><size>0.5 1.2 2.0</size></box></geometry>
-          <material><script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Orange</name>
-          </script></material>
+          <geometry><box><size>1 1 0.002</size></box></geometry>
+          <material>
+            <ambient>0.0 0.2 0.8 1</ambient>
+            <diffuse>0.0 0.3 0.95 1</diffuse>
+          </material>
         </visual>
       </link>
     </model>
 
-    <!-- OB2: Right pillar extends 1.2m into corridor → must go left -->
-    <model name="ob2_right_pillar">
+    <model name="blue_target_2">
       <static>true</static>
-      <pose>7 -0.9 1.0 0 0 0</pose>
+      <pose>14 18 0.002 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry><box><size>0.5 1.2 2.0</size></box></geometry>
-        </collision>
         <visual name="visual">
-          <geometry><box><size>0.5 1.2 2.0</size></box></geometry>
-          <material><script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Orange</name>
-          </script></material>
+          <geometry><box><size>1 1 0.002</size></box></geometry>
+          <material>
+            <ambient>0.0 0.2 0.8 1</ambient>
+            <diffuse>0.0 0.3 0.95 1</diffuse>
+          </material>
         </visual>
       </link>
     </model>
 
-    <!-- OB3: Pinch from BOTH sides — 0.8m center gap -->
-    <model name="ob3_pinch_left">
+    <model name="blue_target_3">
       <static>true</static>
-      <pose>10 0.95 1.0 0 0 0</pose>
+      <pose>25 32 0.002 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry><box><size>0.4 1.1 2.0</size></box></geometry>
-        </collision>
         <visual name="visual">
-          <geometry><box><size>0.4 1.1 2.0</size></box></geometry>
-          <material><script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Red</name>
-          </script></material>
-        </visual>
-      </link>
-    </model>
-    <model name="ob3_pinch_right">
-      <static>true</static>
-      <pose>10 -0.95 1.0 0 0 0</pose>
-      <link name="link">
-        <collision name="collision">
-          <geometry><box><size>0.4 1.1 2.0</size></box></geometry>
-        </collision>
-        <visual name="visual">
-          <geometry><box><size>0.4 1.1 2.0</size></box></geometry>
-          <material><script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Red</name>
-          </script></material>
+          <geometry><box><size>1 1 0.002</size></box></geometry>
+          <material>
+            <ambient>0.0 0.2 0.8 1</ambient>
+            <diffuse>0.0 0.3 0.95 1</diffuse>
+          </material>
         </visual>
       </link>
     </model>
 
-    <!-- OB4: Center wall — blocks center+right, gap on LEFT (0.8m) -->
-    <model name="ob4_center_wall">
+    <model name="blue_target_4">
       <static>true</static>
-      <!-- spans from y=-1.5 to y=+0.7  → center at y=-0.4, width=2.2m -->
-      <pose>13 -0.4 1.0 0 0 0</pose>
+      <pose>7 28 0.002 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry><box><size>0.3 2.2 2.0</size></box></geometry>
-        </collision>
         <visual name="visual">
-          <geometry><box><size>0.3 2.2 2.0</size></box></geometry>
-          <material><script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Yellow</name>
-          </script></material>
+          <geometry><box><size>1 1 0.002</size></box></geometry>
+          <material>
+            <ambient>0.0 0.2 0.8 1</ambient>
+            <diffuse>0.0 0.3 0.95 1</diffuse>
+          </material>
         </visual>
       </link>
     </model>
 
-    <!-- OB5: Large right pillar blocks right 2/3 → go left -->
-    <model name="ob5_big_right">
+    <model name="blue_target_5">
       <static>true</static>
-      <!-- spans from y=-1.5 to y=+0.3 → center y=-0.6, width=1.8m -->
-      <pose>15.5 -0.6 1.0 0 0 0</pose>
+      <pose>22 12 0.002 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry><box><size>0.5 1.8 2.0</size></box></geometry>
-        </collision>
         <visual name="visual">
-          <geometry><box><size>0.5 1.8 2.0</size></box></geometry>
-          <material><script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Orange</name>
-          </script></material>
+          <geometry><box><size>1 1 0.002</size></box></geometry>
+          <material>
+            <ambient>0.0 0.2 0.8 1</ambient>
+            <diffuse>0.0 0.3 0.95 1</diffuse>
+          </material>
         </visual>
       </link>
     </model>
 
-    <!-- OB6: Tight pinch — 0.6m gap offset to the RIGHT side -->
-    <model name="ob6_pinch_left">
-      <static>true</static>
-      <!-- left side: y=+1.5 to y=-0.2 → center y=0.65, width=1.7 -->
-      <pose>17.5 0.65 1.0 0 0 0</pose>
-      <link name="link">
-        <collision name="collision">
-          <geometry><box><size>0.4 1.7 2.0</size></box></geometry>
-        </collision>
-        <visual name="visual">
-          <geometry><box><size>0.4 1.7 2.0</size></box></geometry>
-          <material><script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/RedTransparent</name>
-          </script></material>
-        </visual>
-      </link>
-    </model>
-    <model name="ob6_pinch_right">
-      <static>true</static>
-      <!-- right side: y=-1.5 to y=-0.8 → center y=-1.15, width=0.7 -->
-      <pose>17.5 -1.15 1.0 0 0 0</pose>
-      <link name="link">
-        <collision name="collision">
-          <geometry><box><size>0.4 0.7 2.0</size></box></geometry>
-        </collision>
-        <visual name="visual">
-          <geometry><box><size>0.4 0.7 2.0</size></box></geometry>
-          <material><script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/RedTransparent</name>
-          </script></material>
-        </visual>
-      </link>
-    </model>
-
-    <!-- OB7: Final left pillar blocks left half → exit right -->
-    <model name="ob7_exit_left">
-      <static>true</static>
-      <pose>19.5 0.8 1.0 0 0 0</pose>
-      <link name="link">
-        <collision name="collision">
-          <geometry><box><size>0.5 1.4 2.0</size></box></geometry>
-        </collision>
-        <visual name="visual">
-          <geometry><box><size>0.5 1.4 2.0</size></box></geometry>
-          <material><script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Orange</name>
-          </script></material>
-        </visual>
-      </link>
-    </model>
+    <!-- ════════════════════════════════════════════════════════
+         RED NO-GO ZONE
+         NOT placed here — spawned at RUNTIME with random
+         position and angle via the launch file.
+         See corridor_sim.launch.py → spawn_red_zone
+    ════════════════════════════════════════════════════════ -->
 
     <!-- ── GUI camera starting view ─────────────────────────── -->
     <gui fullscreen="0">
       <camera name="user_camera">
-        <pose>-3 0 4 0 0.4 0</pose>
+        <pose>15 -10 25 0 0.7 1.5708</pose>
         <view_controller>orbit</view_controller>
       </camera>
     </gui>
